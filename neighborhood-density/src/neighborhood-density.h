@@ -23,6 +23,7 @@ namespace bdm {
 struct SimParam : public ParamGroup {
   BDM_PARAM_GROUP_HEADER(SimParam, 1);
 
+  int timesteps = 1000;
   double diameter = 10;
   double interaction_radius = 20;
   int population = 1;
@@ -74,12 +75,26 @@ inline int Simulate(int argc, const char** argv) {
                                        sparam->population, agent_builder);
 
   // Run simulation for one timestep
-  simulation.Simulate(1);
+  auto start = Timing::Timestamp();
+  simulation.GetScheduler()->Simulate(sparam->timesteps);
+  auto stop = Timing::Timestamp();
+  std::cout << "RUNTIME " << (stop - start) << std::endl;
 
-  std::cout << "Density = "
+  std::cout << "Initial density = "
             << static_cast<float>(op_impl->GetResults()[0]) /
                    simulation.GetResourceManager()->GetNumAgents()
             << " neighbors / agent" << std::endl;
+
+  float avg_density_over_time = 0;
+  for (auto res : op_impl->GetResults()) {
+    avg_density_over_time += static_cast<float>(res) /
+                             simulation.GetResourceManager()->GetNumAgents();
+  }
+
+  avg_density_over_time = avg_density_over_time / sparam->timesteps;
+
+  std::cout << "Average density = " << avg_density_over_time
+            << " neighbors / agent / timestep" << std::endl;
 
   std::cout << "Simulation completed successfully!" << std::endl;
   return 0;

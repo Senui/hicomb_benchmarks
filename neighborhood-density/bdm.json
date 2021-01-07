@@ -1,0 +1,12 @@
+{
+  "bdm::Param": {
+     "simulation_max_displacement": 1.0,
+     "random_seed": 0,
+     "statistics" : false
+  },
+  "bdm::SimParam": {
+    "population": 5000,
+    "max_bound": 50,
+    "timesteps": 1000
+  }
+}
