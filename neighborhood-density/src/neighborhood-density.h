@@ -23,12 +23,9 @@ namespace bdm {
 struct SimParam : public ParamGroup {
   BDM_PARAM_GROUP_HEADER(SimParam, 1);
 
-  int timesteps = 1000;
   double diameter = 10;
   double interaction_radius = 20;
-  int population = 1;
   double min_bound = 0;
-  double max_bound = 100;
 };
 
 struct CheckNumNeighbors : public Functor<void, Agent*, int*> {
@@ -56,8 +53,15 @@ struct CheckNumNeighbors : public Functor<void, Agent*, int*> {
 };
 
 inline int Simulate(int argc, const char** argv) {
+  auto opts = CommandLineOptions(argc, argv);
+  opts.AddOption<uint64_t>("m, max-bound", "50", "The maximum dimension length");
+  opts.AddOption<uint64_t>("p, population", "2000", "Population");
+  opts.AddOption<uint64_t>("i, iterations", "5", "Number of timesteps");
+  uint64_t max_bound = opts.Get<uint64_t>("max-bound");
+  uint64_t population = opts.Get<uint64_t>("population");
+  uint64_t iterations = opts.Get<uint64_t>("iterations");
   Param::RegisterParamGroup(new SimParam());
-  Simulation simulation(argc, argv);
+  Simulation simulation(&opts);
 
   auto* op = NewOperation("ReductionOpInt");
   auto* op_impl = op->GetImplementation<ReductionOp<int>>();
@@ -71,19 +75,19 @@ inline int Simulate(int argc, const char** argv) {
     cell->SetDiameter(sparam->diameter);
     return cell;
   };
-  ModelInitializer::CreateAgentsRandom(sparam->min_bound, sparam->max_bound,
-                                       sparam->population, agent_builder);
+  ModelInitializer::CreateAgentsRandom(sparam->min_bound, max_bound,
+                                       population, agent_builder);
 
   // Run simulation for one timestep
   auto start = Timing::Timestamp();
-  simulation.GetScheduler()->Simulate(sparam->timesteps);
+  simulation.GetScheduler()->Simulate(iterations);
   auto stop = Timing::Timestamp();
-  std::cout << "RUNTIME " << (stop - start) << std::endl;
+  std::cout << (stop - start) << std::endl;
 
-  std::cout << "Initial density = "
-            << static_cast<float>(op_impl->GetResults()[0]) /
-                   simulation.GetResourceManager()->GetNumAgents()
-            << " neighbors / agent" << std::endl;
+  // std::cout << "Initial density = "
+  //           << static_cast<float>(op_impl->GetResults()[0]) /
+  //                  simulation.GetResourceManager()->GetNumAgents()
+  //           << " neighbors / agent" << std::endl;
 
   float avg_density_over_time = 0;
   for (auto res : op_impl->GetResults()) {
@@ -91,12 +95,12 @@ inline int Simulate(int argc, const char** argv) {
                              simulation.GetResourceManager()->GetNumAgents();
   }
 
-  avg_density_over_time = avg_density_over_time / sparam->timesteps;
+  avg_density_over_time = avg_density_over_time / iterations;
 
-  std::cout << "Average density = " << avg_density_over_time
-            << " neighbors / agent / timestep" << std::endl;
+  // std::cout << "Average density = " << avg_density_over_time
+  //           << " neighbors / agent / timestep" << std::endl;
 
-  std::cout << "Simulation completed successfully!" << std::endl;
+  // std::cout << "Simulation completed successfully!" << std::endl;
   return 0;
 }
 
