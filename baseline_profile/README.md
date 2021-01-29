@@ -12,12 +12,11 @@ Let's assume:
 2. `source $ROOTSYS/bin/thisroot.sh`
 3. `git clone https://github.com/BioDynaMo/biodynamo.git $BDMSYS`
 4. `git clone https://github.com/brendangregg/FlameGraph.git $FLAMESYS`
-5. `cd $BDMSYS && git checkout 8b3d6c7039fb6f4ed70d47950181d7416cb643e0`
-6. `git apply fix.patch` (patch from this repository)
-7. `mkdir $BDMSYS/build; cd $BDMSYS/build`
-8.  `cmake .. && make`
-9.  `export BDMSYS=$BDMSYS; export FLAMESYS=$FLAMESYS`
-10. `./profile.sh` (profile.sh from this repository)
+5. `cd $BDMSYS && git checkout paper-baseline`
+6. `mkdir $BDMSYS/build; cd $BDMSYS/build`
+7.  `cmake .. && make`
+8.  `export BDMSYS=$BDMSYS; export FLAMESYS=$FLAMESYS`
+9.  `./profile.sh` (profile.sh from this repository)
 
 
 # Important
